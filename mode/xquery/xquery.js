@@ -45,6 +45,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         return chain(stream, state, tokenComment);
       }
     }
+    else if (ch == '"' || ch == "'")
+      return chain(stream, state, tokenString(ch));
+    
     else if(ch == "$") {
       return chain(stream, state, tokenVariable);
     }
@@ -56,17 +59,40 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
   }
 
-  // handle the remainder of a comment until it's closed
+  // handle comments, including nested 
   function tokenComment(stream, state) {
-    var maybeEnd = false, ch;
+    var maybeEnd = false, maybeNested = false, nestedCount = 0, ch;
     while (ch = stream.next()) {
       if (ch == ")" && maybeEnd) {
-        state.tokenize = tokenBase;
-        break;
+        if(nestedCount > 0)
+          nestedCount--;
+        else {
+          state.tokenize = tokenBase;
+          break;
+        }
+      }
+      else if(ch == ":" && maybeNested) {
+        nestedCount++;
       }
       maybeEnd = (ch == ":");
+      maybeNested = (ch == "(");
     }
     return ret("comment", "comment");
+  }
+
+  // handle string literals
+  function tokenString(quote) {
+    return function(stream, state) {
+      var escaped = false, ch;
+      while (ch = stream.next()) {
+        if (ch ==  quote && !escaped) {
+          state.tokenize = tokenBase;
+          break;
+        }
+        escaped = (ch == "\\");
+      }
+      return ret("string", "string");
+    };
   }
   
   function tokenVariable(stream, state) {
@@ -81,7 +107,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   return {
     startState: function(basecolumn) {
       return {
-        tokenize: tokenBase
+        tokenize: tokenBase,
+        cc: []
       };
     },
 

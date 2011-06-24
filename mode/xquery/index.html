@@ -12,7 +12,8 @@
   <body>
     <h1>CodeMirror 2: XQuery mode</h1>
 
-<div><textarea id="code" name="code">
+<div class="cm-s-default">
+	<textarea id="code" name="code">
 xquery version &quot;1.0-ml&quot;;
 (: this is
  : a 
@@ -25,7 +26,23 @@ return element element {
   attribute foo { &quot;bar&quot; },
   fn:doc()[ foo/@bar eq $let ],
   //x }    
-</textarea></div>
+
+(: a more 'evil' test :)
+(: Modified Blakeley example (: with nested comment :) ... :)
+declare private function local:declare() {()};
+declare private function local:private() {()};
+declare private function local:function() {()};
+declare private function local:local() {()};
+let $let := <let>let $let := "let"</let>
+return element element {
+ attribute attribute { try { xdmp:version() } catch($e) { xdmp:log($e) } },
+ attribute fn:doc { "bar" castable as xs:string },
+ element text { text { "text" } },
+ fn:doc()[ child::eq/(@bar | attribute::attribute) eq $let ],
+ //fn:doc
+}
+  </textarea>
+</div>
 
     <script>
       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
