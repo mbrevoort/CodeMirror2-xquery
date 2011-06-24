@@ -58,11 +58,11 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
     else if(ch == "{") {
       state.stack.push({ type: "codeblock"});
-      return ret("bracket", "bracket");
+      return ret("", "");
     }
     else if(ch == "}") {
       state.stack.pop();
-      return ret("bracket", "bracket");
+      return ret("", "");
     }
     // if we're in an XML block
     else if(isInXmlBlock(state)) {
@@ -70,6 +70,10 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         return ret("tag", "tag");
       else  
         return ret("word", "word");
+    }
+    else if (/\d/.test(ch)) {
+      stream.match(/^\d*(?:\.\d*)?(?:e[+\-]?\d+)?/);
+      return ret("number", "atom");
     }
     else if (ch == "(") {
       if (stream.eat(":")) {
