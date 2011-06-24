@@ -2,11 +2,15 @@
 <html>
   <head>
     <title>CodeMirror 2: JavaScript mode</title>
-    <link rel="stylesheet" href="https://raw.github.com/mbrevoort/CodeMirror2/master/lib/codemirror.css">
-    <script src="https://raw.github.com/mbrevoort/CodeMirror2/master/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="http://codemirror.net/lib/codemirror.css">
+    <script src="http://codemirror.net/lib/codemirror.js"></script>
     <script src="https://raw.github.com/mbrevoort/CodeMirror2/master/mode/xquery/xquery.js"></script>
-    <link rel="stylesheet" href="https://raw.github.com/mbrevoort/CodeMirror2/master/theme/default.css">
-    <link rel="stylesheet" href="https://raw.github.com/mbrevoort/CodeMirror2/master/css/docs.css">
+    <link rel="stylesheet" href="http://codemirror.net/theme/default.css"> 
+    <link rel="stylesheet" href="http://codemirror.net/theme/neat.css"> 
+    <link rel="stylesheet" href="http://codemirror.net/theme/elegant.css"> 
+    <link rel="stylesheet" href="http://codemirror.net/theme/night.css"> 
+
+    <link rel="stylesheet" href="http://codemirror.net/css/docs.css">
     <style type="text/css">.CodeMirror {border-top: 1px solid black; border-bottom: 1px solid black;}</style>
   </head>
   <body>
@@ -21,26 +25,26 @@ xquery version &quot;1.0-ml&quot;;
 let $let := &lt;x attr=&quot;value&quot;&gt;&quot;test&quot;&lt;func&gt;function() $var {function()} {$var}&lt;/func&gt;&lt;/x&gt;
 let $joe:=1
 return element element {
-  attribute attribute { 1 },
-  element test { &#39;a&#39; }, 
-  attribute foo { &quot;bar&quot; },
-  fn:doc()[ foo/@bar eq $let ],
-  //x }    
+	attribute attribute { 1 },
+	element test { &#39;a&#39; }, 
+	attribute foo { &quot;bar&quot; },
+	fn:doc()[ foo/@bar eq $let ],
+	//x }    
 
-	(: a more 'evil' test :)
-	(: Modified Blakeley example (: with nested comment :) ... :)
-	declare private function local:declare() {()};
-	declare private function local:private() {()};
-	declare private function local:function() {()};
-	declare private function local:local() {()};
-	let $let := &lt;let&gt;let $let := &quot;let&quot;&lt;/let&gt;
-	return element element {
-	 attribute attribute { try { xdmp:version() } catch($e) { xdmp:log($e) } },
-	 attribute fn:doc { &quot;bar&quot; castable as xs:string },
-	 element text { text { &quot;text&quot; } },
-	 fn:doc()[ child::eq/(@bar | attribute::attribute) eq $let ],
-	 //fn:doc
-	}
+(: a more 'evil' test :)
+(: Modified Blakeley example (: with nested comment :) ... :)
+declare private function local:declare() {()};
+declare private function local:private() {()};
+declare private function local:function() {()};
+declare private function local:local() {()};
+let $let := &lt;let&gt;let $let := &quot;let&quot;&lt;/let&gt;
+return element element {
+	attribute attribute { try { xdmp:version() } catch($e) { xdmp:log($e) } },
+	attribute fn:doc { &quot;bar&quot; castable as xs:string },
+	element text { text { &quot;text&quot; } },
+	fn:doc()[ child::eq/(@bar | attribute::attribute) eq $let ],
+	//fn:doc
+}
   </textarea>
 </div>
 
@@ -54,5 +58,20 @@ return element element {
 
 
     <p><strong>MIME types defined:</strong> <code>application/xquery</code>.</p>
+
+		<p>Select a theme: <select onchange="selectTheme(this)"> 
+		    <option selected>default</option> 
+		    <option>night</option> 
+		    <option>neat</option> 
+		    <option>elegant</option> 
+		</select> 
+		</p> 
+
+		<script> 
+		  function selectTheme(node) {
+		    var theme = node.options[node.selectedIndex].innerHTML;
+		    editor.setOption("theme", theme);
+		  }
+		</script>
   </body>
 </html>
