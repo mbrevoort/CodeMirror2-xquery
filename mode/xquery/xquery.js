@@ -2,6 +2,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
   var keywords = function(){
     function kw(type) {return {type: type, style: "keyword"};}
+    function qualifier(type) {return {type: "axis_specifier", style: "qualifier"};}
     var A = kw("keyword a"), B = kw("keyword b"), C = kw("keyword c");
     var operator = kw("operator"), atom = {type: "atom", style: "atom"};
     var kwObj = {
@@ -27,6 +28,10 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     'xs:base64Binary', 'xs:anyURI', 'xs:QName', 'xs:byte','xs:boolean','xs:anyURI','xf:yearMonthDuration'];
     for(var i=0, l=types.length; i < l; i++) { kwObj[types[i]] = atom;};
     
+    var axis_specifiers = ["self::", "attribute::", "child::", "descendant::", "descendant-or-self::", "parent::", 
+    "ancestor::", "ancestor-or-self::", "following::", "preceding::", "following-sibling::", "preceding-sibling::"];
+    for(var i=0, l=types.length; i < l; i++) { kwObj[axis_specifiers[i]] = qualifier(axis_specifiers[i]);};
+
     return kwObj;
   }();
 
@@ -44,7 +49,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   }
   
   function tokenBase(stream, state) {
-    var ch = stream.next();
+    var ch = stream.next(), mightBeFunction = false;
     
     if (ch == "<") {
       var isclose = stream.eat("/");;
@@ -53,13 +58,13 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       var c;
       while ((c = stream.eat(/[^\s\u00a0=<>\"\'\/?]/))) tagName += c;
       return chain(stream, state, tokenTag(tagName, isclose));
-      // state.tokenize = inTag;
-      // return "tag";
     }
+    // start code block
     else if(ch == "{") {
       state.stack.push({ type: "codeblock"});
       return ret("", "");
     }
+    // end code block
     else if(ch == "}") {
       state.stack.pop();
       return ret("", "");
@@ -71,28 +76,60 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       else  
         return ret("word", "word");
     }
+    // if a number
     else if (/\d/.test(ch)) {
       stream.match(/^\d*(?:\.\d*)?(?:e[+\-]?\d+)?/);
       return ret("number", "atom");
     }
+    // comment start
     else if (ch == "(") {
       if (stream.eat(":")) {
         return chain(stream, state, tokenComment);
       }
     }
+    // quoted string
     else if (ch == '"' || ch == "'")
       return chain(stream, state, tokenString(ch));
-    
+    // variable
     else if(ch == "$") {
       return chain(stream, state, tokenVariable);
     }
+    // assignment
     else if(ch ==":" && stream.eat("=")) {
       return ret("operator", "keyword");
     }
     else {
-      stream.eatWhile(/[\w\$_:]/);
+      // gobble up a word
+      stream.eatWhile(/[\w\$_]/);
+      
+      // gobble a colon in the case that is a lib func type call fn:doc
+      var foundColon = stream.eat(":")
+      
+      // if there's not a second colon, gobble another word. Otherwise, it's probably an axis specifier
+      // which should get matched as a keyword
+      if(!stream.eat(":") && foundColon) {
+        stream.eatWhile(/[\w\$_]/);
+        
+        // this is a function call, set a flag and address after we settle on the whole word
+        mightBeFunction = true;        
+      }
+      // is the word a keyword?
       var word = stream.current(), known = keywords.propertyIsEnumerable(word) && keywords[word];
-      console.log(word, known);
+      console.log(word);
+      
+      // if we think it's a function call but not yet known, 
+      // set style to variable for now for lack of something better
+      if(mightBeFunction && !known) known = {type: "function_call", style: "variable"};
+      
+      // if the previous word was element, attribute, axis specifier, this word should be the name of that
+      if(isInXmlConstructor(state)) {
+        state.stack.pop();
+        return ret("word", "word", word);
+      }
+      // as previously checked, if the word is element,attribute, axis specifier, call it an "xmlconstructor" and 
+      // push the stack so we know to look for it on the next word
+      if(word == "element" || word == "attribute" || known.type == "axis_specifier") state.stack.push({type: "xmlconstructor"});
+      
       return known ? ret(known.type, known.style, word) :
                      ret("word", "word", word);
     }
@@ -170,12 +207,12 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return ret("attribute", "attribute");
   }
   
-  function isInXmlBlock(state) {
-    return (state.stack.length && state.stack[state.stack.length - 1].type == "tag");
-  }
+  function isInXmlBlock(state) { return isIn(state, "tag"); }
+  function isInCodeBlock(state) { return isIn(state, "codeblock"); }
+  function isInXmlConstructor(state) { return isIn(state, "xmlconstructor"); }
   
-  function isInCodeBlock(state) {
-    return (state.stack.length && state.stack[state.stack.length - 1].type == "codeblock");
+  function isIn(state, type) {
+    return (state.stack.length && state.stack[state.stack.length - 1].type == type);    
   }
 
   // the interface for the mode API
