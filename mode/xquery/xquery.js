@@ -119,7 +119,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       
       // if we think it's a function call but not yet known, 
       // set style to variable for now for lack of something better
-      if(mightBeFunction && !known) known = {type: "function_call", style: "variable"};
+      if(mightBeFunction && !known) known = {type: "function_call", style: "variable, xquery-function"};
       
       // if the previous word was element, attribute, axis specifier, this word should be the name of that
       if(isInXmlConstructor(state)) {
@@ -165,7 +165,14 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
           state.tokenize = tokenBase;
           break;
         }
-        escaped = (ch == "\\");
+        // if the previous character was escaped, this is the escape character
+        // so we just satified the escaping
+        else if(escaped) {
+          escaped = false;
+        }
+        else {
+          escaped = (ch == "\\");          
+        }
       }
       return ret("string", "string");
     };
