@@ -1,0 +1,29 @@
+
+.cm-s-xquery-dark { background: #0a001f; color: #f8f8f8; }
+.cm-s-xquery-dark span.CodeMirror-selected { background: #a8f !important; }
+.cm-s-xquery-dark .CodeMirror-gutter { background: #0a001f; border-right: 1px solid #aaa; }
+.cm-s-xquery-dark .CodeMirror-gutter-text { color: #f8f8f8; }
+.cm-s-xquery-dark .CodeMirror-cursor { border-left: 1px solid white !important; }
+
+
+.cm-s-xquery-dark span.cm-keyword {color: #FFBD40;}
+.cm-s-xquery-dark span.cm-atom {color: #6C8CD5;}
+.cm-s-xquery-dark span.cm-number {color: #164;}
+.cm-s-xquery-dark span.cm-def {color: #00f;}
+.cm-s-xquery-dark span.cm-variable {color: #FFF;}
+.cm-s-xquery-dark span.cm-variable-2 {color: #EEE;}
+.cm-s-xquery-dark span.cm-variable-3 {color: #DDD;}
+.cm-s-xquery-dark span.cm-property {}
+.cm-s-xquery-dark span.cm-operator {}
+.cm-s-xquery-dark span.cm-comment {color: gray;}
+.cm-s-xquery-dark span.cm-string {color: #9FEE00;}
+.cm-s-xquery-dark span.cm-meta {color: #555;}
+.cm-s-xquery-dark span.cm-error {color: #f00;}
+.cm-s-xquery-dark span.cm-qualifier {color: #FFF700;}
+.cm-s-xquery-dark span.cm-builtin {color: #30a;}
+.cm-s-xquery-dark span.cm-bracket {color: #cc7;}
+.cm-s-xquery-dark span.cm-tag {color: #FFBD40;}
+.cm-s-xquery-dark span.cm-attribute {color: #FFF700;}
+
+.cm-s-xquery-dark span.xquery-function { color: #FFF; text-decoration:underline;}
+
