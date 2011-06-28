@@ -2,15 +2,15 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
   var keywords = function(){
     function kw(type) {return {type: type, style: "keyword"};}
-    function qualifier(type) {return {type: "axis_specifier", style: "qualifier"};}
+    function qualifier() {return {type: "axis_specifier", style: "qualifier"};}
     var A = kw("keyword a"), B = kw("keyword b"), C = kw("keyword c");
-    var operator = kw("operator"), atom = {type: "atom", style: "atom"};
+    var operator = kw("operator"), atom = {type: "atom", style: "atom"}, punctuation = {type: "punctuation", style: ""};
     var kwObj = {
       'if': A, 'switch': A, 'while': A, 'for': A,
       'else': B, 'then': B, 'try': B, 'finally': B, 'catch': B,
       'element': C, 'attribute': C, 'let': C, 'implements': C, 'import': C, 'module': C, 'namespace': C, 
-      'return': C, 'super': C, 'this': C, 'throws': C, 'where': C, 'private': C,
-      'eq': operator, 'ne': operator, 'lt': operator, 'le': operator, 'gt': operator, 'ge': operator, ':=': operator,
+      'return': C, 'super': C, 'this': C, 'throws': C, 'where': C, 'private': C,      
+      ',': punctuation,
       'null': atom, 'fn:false()': atom, 'fn:true()': atom
     };
     var basic = ['after','ancestor','ancestor-or-self','and','as','ascending','assert','attribute','before',
@@ -27,6 +27,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     'xs:time', 'xs:duration', 'xs:dayTimeDuration', 'xs:time', 'xs:yearMonthDuration', 'numeric', 'xs:hexBinary', 
     'xs:base64Binary', 'xs:anyURI', 'xs:QName', 'xs:byte','xs:boolean','xs:anyURI','xf:yearMonthDuration'];
     for(var i=0, l=types.length; i < l; i++) { kwObj[types[i]] = atom;};
+    
+    var operators = ['eq', 'ne', 'lt', 'le', 'gt', 'ge', ':=', '=', '>', '>=', '<', '<=', '.', '|', '?', 'and', 'or', 'div', 'mod', '*', '/'];
+    for(var i=0, l=operators.length; i < l; i++) { kwObj[operators[i]] = operator;};
     
     var axis_specifiers = ["self::", "attribute::", "child::", "descendant::", "descendant-or-self::", "parent::", 
     "ancestor::", "ancestor-or-self::", "following::", "preceding::", "following-sibling::", "preceding-sibling::"];
@@ -98,9 +101,31 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     else if(ch ==":" && stream.eat("=")) {
       return ret("operator", "keyword");
     }
+    // open paren
+    else if(ch == "(") {
+      state.stack.push({ type: "paren"});
+      return ret("", "");
+    }
+    // close paren
+    else if(ch == ")") {
+      state.stack.pop();
+      return ret("", "");
+    }
+    // open paren
+    else if(ch == "[") {
+      state.stack.push({ type: "bracket"});
+      return ret("", "");
+    }
+    // close paren
+    else if(ch == "]") {
+      state.stack.pop();
+      return ret("", "");
+    }
     else {
-      // gobble up a word
-      stream.eatWhile(/[\w\$_]/);
+      var known = keywords.propertyIsEnumerable(ch) && keywords[ch];
+      
+      // gobble up a word if the character is not known
+      if(!known) stream.eatWhile(/[\w\$_-]/);
       
       // gobble a colon in the case that is a lib func type call fn:doc
       var foundColon = stream.eat(":")
@@ -108,14 +133,18 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       // if there's not a second colon, gobble another word. Otherwise, it's probably an axis specifier
       // which should get matched as a keyword
       if(!stream.eat(":") && foundColon) {
-        stream.eatWhile(/[\w\$_]/);
+        stream.eatWhile(/[\w\$_-]/);
         
         // this is a function call, set a flag and address after we settle on the whole word
         mightBeFunction = true;        
       }
+      // if the next character is an open paren, this is probably a function (if not a keyword of other sort)
+      else if(stream.peek("(")) {
+        mightBeFunction = true;
+      }
       // is the word a keyword?
-      var word = stream.current(), known = keywords.propertyIsEnumerable(word) && keywords[word];
-      console.log(word);
+      var word = stream.current();
+      known = keywords.propertyIsEnumerable(word) && keywords[word];
       
       // if we think it's a function call but not yet known, 
       // set style to variable for now for lack of something better

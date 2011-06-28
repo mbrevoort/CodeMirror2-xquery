@@ -15,14 +15,14 @@
 .cm-s-xquery-dark span.cm-variable-3 {color: #DDD;}
 .cm-s-xquery-dark span.cm-property {}
 .cm-s-xquery-dark span.cm-operator {}
-.cm-s-xquery-dark span.cm-comment {color: #CDCDCD;}
+.cm-s-xquery-dark span.cm-comment {color: gray;}
 .cm-s-xquery-dark span.cm-string {color: #9FEE00;}
 .cm-s-xquery-dark span.cm-meta {color: #555;}
 .cm-s-xquery-dark span.cm-error {color: #f00;}
-.cm-s-xquery-dark span.cm-qualifier {color: #555;}
+.cm-s-xquery-dark span.cm-qualifier {color: #FFF700;}
 .cm-s-xquery-dark span.cm-builtin {color: #30a;}
 .cm-s-xquery-dark span.cm-bracket {color: #cc7;}
 .cm-s-xquery-dark span.cm-tag {color: #FFBD40;}
 .cm-s-xquery-dark span.cm-attribute {color: #FFF700;}
 
-.cm-s-xquery-dark span.xquery-function { color: #FFF700; }
+.cm-s-xquery-dark span.xquery-function { color: #FFF; text-decoration:underline;}
