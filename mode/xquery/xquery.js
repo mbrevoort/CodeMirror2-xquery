@@ -138,8 +138,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         // this is a function call, set a flag and address after we settle on the whole word
         mightBeFunction = true;        
       }
-      // if the next character is an open paren, this is probably a function (if not a keyword of other sort)
-      else if(stream.peek("(")) {
+      // if the next non whitespace character is an open paren, this is probably a function (if not a keyword of other sort)
+      else if(stream.match(/[ \t]*\(/, false)) {
         mightBeFunction = true;
       }
       // is the word a keyword?
