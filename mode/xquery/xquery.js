@@ -30,7 +30,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     function kw(type) {return {type: type, style: "keyword"};}
     var A = kw("keyword a")
       , B = kw("keyword b")
-      , C = kw("keyword c");
+      , C = kw("keyword c")
       , operator = kw("operator")
       , atom = {type: "atom", style: "atom"}
       , punctuation = {type: "punctuation", style: ""}

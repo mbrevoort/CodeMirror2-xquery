@@ -1,0 +1,1 @@
+find * | grep ".xq" | awk '{print "<li><a href=\"#!"$1"\">"$1"</a></li>"}' > out.txt
