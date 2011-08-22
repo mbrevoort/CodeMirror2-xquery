@@ -22,11 +22,21 @@ THE SOFTWARE.
 */
 CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
+  // The keywords object is set to the result of this self executing
+  // function. Each keyword is a property of the keywords object whose
+  // value is {type: atype, style: astyle}
   var keywords = function(){
+    // conveinence functions used to build keywords object
     function kw(type) {return {type: type, style: "keyword"};}
-    function qualifier() {return {type: "axis_specifier", style: "qualifier"};}
-    var A = kw("keyword a"), B = kw("keyword b"), C = kw("keyword c");
-    var operator = kw("operator"), atom = {type: "atom", style: "atom"}, punctuation = {type: "punctuation", style: ""};
+    var A = kw("keyword a")
+      , B = kw("keyword b")
+      , C = kw("keyword c");
+      , operator = kw("operator")
+      , atom = {type: "atom", style: "atom"}
+      , punctuation = {type: "punctuation", style: ""}
+      , qualifier = {type: "axis_specifier", style: "qualifier"};
+    
+    // kwObj is what is return from this function at the end
     var kwObj = {
       'if': A, 'switch': A, 'while': A, 'for': A,
       'else': B, 'then': B, 'try': B, 'finally': B, 'catch': B,
@@ -35,6 +45,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       ',': punctuation,
       'null': atom, 'fn:false()': atom, 'fn:true()': atom
     };
+    
+    // a list of 'basic' keywords. For each add a property to kwObj with the value of 
+    // {type: basic[i], style: "keyword"} e.g. 'after' --> {type: "after", style: "keyword"}
     var basic = ['after','ancestor','ancestor-or-self','and','as','ascending','assert','attribute','before',
     'by','case','cast','child','comment','declare','default','define','descendant','descendant-or-self',
     'descending','document-node','element','else','eq','every','except','external','following',
@@ -45,17 +58,21 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     'xquery'];
     for(var i=0, l=basic.length; i < l; i++) { kwObj[basic[i]] = kw(basic[i])};
     
+    // a list of types. For each add a property to kwObj with the value of 
+    // {type: "atom", style: "atom"}
     var types = ['xs:string', 'xs:float', 'xs:decimal', 'xs:double', 'xs:integer', 'xs:boolean', 'xs:date', 'xs:dateTime', 
     'xs:time', 'xs:duration', 'xs:dayTimeDuration', 'xs:time', 'xs:yearMonthDuration', 'numeric', 'xs:hexBinary', 
     'xs:base64Binary', 'xs:anyURI', 'xs:QName', 'xs:byte','xs:boolean','xs:anyURI','xf:yearMonthDuration'];
     for(var i=0, l=types.length; i < l; i++) { kwObj[types[i]] = atom;};
     
+    // each operator will add a property to kwObj with value of {type: "operator", style: "keyword"}
     var operators = ['eq', 'ne', 'lt', 'le', 'gt', 'ge', ':=', '=', '>', '>=', '<', '<=', '.', '|', '?', 'and', 'or', 'div', 'mod', '*', '/'];
     for(var i=0, l=operators.length; i < l; i++) { kwObj[operators[i]] = operator;};
     
+    // each axis_specifiers will add a property to kwObj with value of {type: "axis_specifier", style: "qualifier"}
     var axis_specifiers = ["self::", "attribute::", "child::", "descendant::", "descendant-or-self::", "parent::", 
     "ancestor::", "ancestor-or-self::", "following::", "preceding::", "following-sibling::", "preceding-sibling::"];
-    for(var i=0, l=types.length; i < l; i++) { kwObj[axis_specifiers[i]] = qualifier(axis_specifiers[i]);};
+    for(var i=0, l=axis_specifiers.length; i < l; i++) { kwObj[axis_specifiers[i]] = qualifier; };
 
     return kwObj;
   }();
@@ -63,6 +80,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   // Used as scratch variables to communicate multiple values without
   // consing up tons of objects.
   var type, content;
+  
   function ret(tp, style, cont) {
     type = tp; content = cont;
     return style;
@@ -73,9 +91,11 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return f(stream, state);
   }
   
+  // the primary mode tokenizer
   function tokenBase(stream, state) {
     var ch = stream.next(), mightBeFunction = false;
     
+    // an XML tag (if not in some sub, chained tokenizer)
     if (ch == "<") {
       var isclose = stream.eat("/");;
       stream.eatSpace();
@@ -181,6 +201,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       // push the stack so we know to look for it on the next word
       if(word == "element" || word == "attribute" || known.type == "axis_specifier") state.stack.push({type: "xmlconstructor"});
       
+      // if the word is known, return the details of that else just call this a generic 'word'
       return known ? ret(known.type, known.style, word) :
                      ret("word", "word", word);
     }
@@ -207,7 +228,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return ret("comment", "comment");
   }
 
-  // handle string literals
+  // tokenizer for string literals
   function tokenString(quote) {
     return function(stream, state) {
       var escaped = false, ch;
@@ -229,6 +250,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     };
   }
   
+  // tokenizer for variables
   function tokenVariable(stream, state) {
     var isVariableChar = /[\w\$_-]/;
     stream.eatWhile(isVariableChar);
@@ -236,6 +258,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return ret("variable", "variable");
   }
   
+  // tokenizer for XML tags
   function tokenTag(name, isclose) {
     return function(stream, state) {
       stream.eatSpace();
@@ -256,6 +279,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
   }
 
+  // tokenizer for XML attributes
   function tokenAttribute(stream, state) {
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
@@ -265,6 +289,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return ret("attribute", "attribute");
   }
   
+  // functions to test the current context of the state
   function isInXmlBlock(state) { return isIn(state, "tag"); }
   function isInCodeBlock(state) { return isIn(state, "codeblock"); }
   function isInXmlConstructor(state) { return isIn(state, "xmlconstructor"); }
@@ -286,7 +311,6 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     token: function(stream, state) {
       if (stream.eatSpace()) return null;
       var style = state.tokenize(stream, state);
-      //if (type == "comment") return style;
       return style;
     }
   };
