@@ -97,11 +97,11 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     
     // an XML tag (if not in some sub, chained tokenizer)
     if (ch == "<") {
-      var isclose = stream.eat("/");;
+      var isclose = stream.eat("/");
       stream.eatSpace();
-      tagName = "";
-      var c;
+      var tagName = "", c;
       while ((c = stream.eat(/[^\s\u00a0=<>\"\'\/?]/))) tagName += c;
+      
       return chain(stream, state, tokenTag(tagName, isclose));
     }
     // start code block
@@ -118,6 +118,10 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     else if(isInXmlBlock(state)) {
       if(ch == ">")
         return ret("tag", "tag");
+      else if(ch == "/" && stream.eat(">")) {
+        state.stack.pop();
+        return ret("tag", "tag");
+      }
       else  
         return ret("word", "word");
     }
@@ -267,7 +271,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         state.tokenize = tokenBase;
         return ret("tag", "tag");
       }
-      state.stack.push({ type: "tag", name: name });
+      // self closing tag without attributes?
+      if(!stream.eat("/"))
+        state.stack.push({ type: "tag", name: name });
       if(!stream.eat(">")) {
         state.tokenize = tokenAttribute;
         return ret("tag", "tag");
@@ -284,7 +290,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
     stream.eatSpace();
-    if(stream.peek(">"))
+    if(stream.peek(">") || stream.peek("/"))
       state.tokenize = tokenBase;
     return ret("attribute", "attribute");
   }
