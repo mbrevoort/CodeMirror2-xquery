@@ -97,6 +97,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     
     // an XML tag (if not in some sub, chained tokenizer)
     if (ch == "<") {
+      if(stream.match(/!--/, true))
+        return chain(stream, state, tokenXMLComment);
+        
       var isclose = stream.eat("/");
       stream.eatSpace();
       var tagName = "", c;
@@ -294,6 +297,17 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       state.tokenize = tokenBase;
     return ret("attribute", "attribute");
   }
+  
+  // handle comments, including nested 
+  function tokenXMLComment(stream, state) {
+    while (ch = stream.next()) {
+      if (ch == "-" && stream.match("->", true)) {
+        state.tokenize = tokenBase;        
+        return ret("comment", "comment");
+      }
+    }
+  }
+  
   
   // functions to test the current context of the state
   function isInXmlBlock(state) { return isIn(state, "tag"); }
