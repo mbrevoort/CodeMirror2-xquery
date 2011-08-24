@@ -41,13 +41,13 @@ THE SOFTWARE.
   <body style="margin-top:0"> 
     <h1>CodeMirror 2: XQuery mode tester</h1> 
 	<p class="subhead">tests from the <a href="http://dev.w3.org/2006/xquery-test-suite/PublicPagesStagingArea/">W3C XQuery Test Suite</a></p>
+	<h3 class="title">&nbsp;</h3>
+	<div class="cm-s-default"> 
+	  <textarea id="code" name="code"> 
+	  </textarea> 
+	</div> 
 
-<div class="cm-s-default"> 
-  <textarea id="code" name="code"> 
-  </textarea> 
-</div> 
-
-<div id="filelist">
+	<div id="filelist">
 	<ul>
 		<li><a href="#!Appendices/Annex-E/annex-1.xq">Appendices/Annex-E/annex-1.xq</a></li>
 		<li><a href="#!Appendices/Annex-E/annex-2.xq">Appendices/Annex-E/annex-2.xq</a></li>
@@ -19709,9 +19709,9 @@ THE SOFTWARE.
 		<li><a href="#!exprSeqTypes/XQueryComment/K2-XQueryComment-5.xq">exprSeqTypes/XQueryComment/K2-XQueryComment-5.xq</a></li>
 		
 	</ul>
-</div>
-<div class="footer">created by <a href="http://twitter.com/mbrevoort">Mike Brevoort</a></div>
-<div class="key">press <em>shift-&uarr;</em> or <em>shift-&darr;</em> to navigate list when out of focus from the editor </div>
+	</div>
+	<div class="footer">created by <a href="http://twitter.com/mbrevoort">Mike Brevoort</a></div>
+	<div class="key">press <em>shift-&uarr;</em> or <em>shift-&darr;</em> to navigate list when out of focus from the editor </div>
 
     <script type="text/javascript">
 		
@@ -19729,6 +19729,8 @@ THE SOFTWARE.
 				});
 				$("a.selected").removeClass("selected");
 				cacheSelected = $('a[href="#!' + path + '"]').addClass("selected").scrollintoview();
+				
+				$("h3.title").text(path);
 			}
 			
 			$("#filelist a").click(function(evt) {
