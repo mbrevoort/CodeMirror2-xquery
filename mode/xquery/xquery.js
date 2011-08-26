@@ -97,7 +97,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     
     // an XML tag (if not in some sub, chained tokenizer)
     if (ch == "<") {
-      if(stream.match(/!--/, true))
+      if(stream.match("!--", true))
         return chain(stream, state, tokenXMLComment);
         
       var isclose = stream.eat("/");
@@ -109,12 +109,12 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
     // start code block
     else if(ch == "{") {
-      state.stack.push({ type: "codeblock"});
+      pushStateStack(state,{ type: "codeblock"});
       return ret("", "");
     }
     // end code block
     else if(ch == "}") {
-      state.stack.pop();
+      popStateStack(state);
       return ret("", "");
     }
     // if we're in an XML block
@@ -122,7 +122,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       if(ch == ">")
         return ret("tag", "tag");
       else if(ch == "/" && stream.eat(">")) {
-        state.stack.pop();
+        popStateStack(state);
         return ret("tag", "tag");
       }
       else  
@@ -135,6 +135,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
     // comment start
     else if (ch == "(" && stream.eat(":")) {
+      pushStateStack(state, { type: "comment"});
       return chain(stream, state, tokenComment);
     }
     // quoted string
@@ -150,22 +151,22 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
     // open paren
     else if(ch == "(") {
-      state.stack.push({ type: "paren"});
+      pushStateStack(state, { type: "paren"});
       return ret("", "");
     }
     // close paren
     else if(ch == ")") {
-      state.stack.pop();
+      popStateStack(state);
       return ret("", "");
     }
     // open paren
     else if(ch == "[") {
-      state.stack.push({ type: "bracket"});
+      pushStateStack(state, { type: "bracket"});
       return ret("", "");
     }
     // close paren
     else if(ch == "]") {
-      state.stack.pop();
+      popStateStack(state);
       return ret("", "");
     }
     else {
@@ -199,12 +200,12 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       
       // if the previous word was element, attribute, axis specifier, this word should be the name of that
       if(isInXmlConstructor(state)) {
-        state.stack.pop();
+        popStateStack(state);
         return ret("word", "word", word);
       }
       // as previously checked, if the word is element,attribute, axis specifier, call it an "xmlconstructor" and 
       // push the stack so we know to look for it on the next word
-      if(word == "element" || word == "attribute" || known.type == "axis_specifier") state.stack.push({type: "xmlconstructor"});
+      if(word == "element" || word == "attribute" || known.type == "axis_specifier") pushStateStack(state, {type: "xmlconstructor"});
       
       // if the word is known, return the details of that else just call this a generic 'word'
       return known ? ret(known.type, known.style, word) :
@@ -220,7 +221,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         if(nestedCount > 0)
           nestedCount--;
         else {
-          state.tokenize = tokenBase;
+          popStateStack(state);
           break;
         }
       }
@@ -230,16 +231,31 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       maybeEnd = (ch == ":");
       maybeNested = (ch == "(");
     }
+    
     return ret("comment", "comment");
   }
 
   // tokenizer for string literals
-  function tokenString(quote) {
+  // optionally pass a tokenizer function to set state.tokenize back to when finished
+  function tokenString(quote, f) {
     return function(stream, state) {
       var escaped = false, ch;
+      
+      // if we're in a string and in an XML block, allow an embedded code block
+      if(stream.match("{", false) && isInXmlBlock(state)) {
+        pushStateStack(state, { type: "string", name: quote, tokenize: tokenString(quote, f) });
+        state.tokenize = tokenBase;
+        return ret("string", "string"); 
+      }
+
+      if(isInString(state) && stream.current() == quote) {
+        popStateStack(state);
+        return ret("string", "string");
+      }
+      
       while (ch = stream.next()) {
         if (ch ==  quote && !escaped) {
-          state.tokenize = tokenBase;
+          state.tokenize = f || tokenBase;
           break;
         }
         // if the previous character was escaped, this is the escape character
@@ -251,6 +267,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
           escaped = (ch == "\\");          
         }
       }
+      
       return ret("string", "string");
     };
   }
@@ -268,13 +285,13 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return function(stream, state) {
       stream.eatSpace();
       if(isclose && stream.eat(">")) {
-        state.stack.pop();
+        popStateStack(state);
         state.tokenize = tokenBase;
         return ret("tag", "tag");
       }
       // self closing tag without attributes?
       if(!stream.eat("/"))
-        state.stack.push({ type: "tag", name: name });
+        pushStateStack(state, { type: "tag", name: name });
       if(!stream.eat(">")) {
         state.tokenize = tokenAttribute;
         return ret("tag", "tag");
@@ -288,11 +305,28 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
   // tokenizer for XML attributes
   function tokenAttribute(stream, state) {
+    var ch = stream.next();
+    
+    if(ch == "/" && stream.eat(">")) {
+      popStateStack(state);
+      return ret("tag", "tag");
+    }
+    if(ch == ">") {
+      popStateStack(state);
+      return ret("tag", "tag");
+    }
+    if(ch == "=")
+      return ret("", "");
+    // quoted string
+    if (ch == '"' || ch == "'")
+      return chain(stream, state, tokenString(ch, tokenAttribute));
+    
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
     stream.eatSpace();
-    if(stream.peek(">") || stream.peek("/"))
-      state.tokenize = tokenBase;
+    if(stream.match(">", false) || stream.match("/", false)) {
+      state.tokenize = tokenBase;      
+    }
     return ret("attribute", "attribute");
   }
   
@@ -311,9 +345,21 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   function isInXmlBlock(state) { return isIn(state, "tag"); }
   function isInCodeBlock(state) { return isIn(state, "codeblock"); }
   function isInXmlConstructor(state) { return isIn(state, "xmlconstructor"); }
+  function isInString(state) { return isIn(state, "string"); }
   
   function isIn(state, type) {
     return (state.stack.length && state.stack[state.stack.length - 1].type == type);    
+  }
+  
+  function pushStateStack(state, newState) {
+    //console.log("pushing ", newState);
+    state.stack.push(newState);
+  }
+  
+  function popStateStack(state) {
+    //console.log("popping ", state.stack.pop());
+    var reinstateTokenize = state.stack.length && state.stack[state.stack.length-1].tokenize
+    state.tokenize = reinstateTokenize || tokenBase;
   }
 
   // the interface for the mode API
