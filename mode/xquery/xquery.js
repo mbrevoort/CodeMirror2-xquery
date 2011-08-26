@@ -134,10 +134,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       return ret("number", "atom");
     }
     // comment start
-    else if (ch == "(") {
-      if (stream.eat(":")) {
-        return chain(stream, state, tokenComment);
-      }
+    else if (ch == "(" && stream.eat(":")) {
+      return chain(stream, state, tokenComment);
     }
     // quoted string
     else if (ch == '"' || ch == "'")
