@@ -357,7 +357,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   }
   
   function popStateStack(state) {
-    //console.log("popping ", state.stack.pop());
+    var popped = state.stack.pop();
+    //console.log("popping ", popped);
     var reinstateTokenize = state.stack.length && state.stack[state.stack.length-1].tokenize
     state.tokenize = reinstateTokenize || tokenBase;
   }
