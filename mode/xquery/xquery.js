@@ -130,7 +130,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     }
     // if a number
     else if (/\d/.test(ch)) {
-      stream.match(/^\d*(?:\.\d*)?(?:e[+\-]?\d+)?/);
+      stream.match(/^\d*(?:\.\d*)?(?:E[+\-]?\d+)?/);
       return ret("number", "atom");
     }
     // comment start
