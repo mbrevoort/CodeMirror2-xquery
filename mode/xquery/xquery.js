@@ -104,6 +104,12 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         state.tokenize = tokenCDATA;
         return ret("tag", "tag");
       }
+      
+      if(stream.match("?", false)) {
+        state.tokenize = tokenPreProcessing;
+        return ret("tag", "tag");
+      }
+      
       var isclose = stream.eat("/");
       stream.eatSpace();
       var tagName = "", c;
@@ -344,10 +350,20 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   }
 
 
-  // handle comments, including nested 
+  // handle CDATA
   function tokenCDATA(stream, state) {
     while (ch = stream.next()) {
       if (ch == "]" && stream.match("]", true)) {
+        state.tokenize = tokenBase;        
+        return ret("comment", "comment");
+      }
+    }
+  }
+
+  // handle preprocessing instructions
+  function tokenPreProcessing(stream, state) {
+    while (ch = stream.next()) {
+      if (ch == "?" && stream.match(">", false)) {
         state.tokenize = tokenBase;        
         return ret("comment", "comment");
       }
