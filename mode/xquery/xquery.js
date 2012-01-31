@@ -247,7 +247,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   function tokenString(quote, f) {
     return function(stream, state) {
       var escaped = false, ch;
-      
+
       // if we're in a string and in an XML block, allow an embedded code block
       if(stream.match("{", false) && isInXmlAttributeBlock(state)) {
         state.tokenize = tokenBase;
@@ -257,12 +257,14 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
       if(isInString(state) && stream.current() == quote) {
         popStateStack(state);
+        if(f) state.tokenize = f;
         return ret("string", "string");
       }
       
       while (ch = stream.next()) {
         if (ch ==  quote && !escaped) {
           popStateStack(state);
+          if(f) state.tokenize = f;
           break;
         }
         // if the previous character was escaped, this is the escape character
@@ -272,6 +274,14 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         }
         else {
           escaped = (ch == "\\");          
+
+          // if we're in a string and in an XML block, allow an embedded code block in an attribute
+          if(stream.match("{", false) && isInXmlAttributeBlock(state)) {
+            state.tokenize = tokenBase;
+            pushStateStack(state, { type: "string", name: quote, tokenize: tokenString(quote, f) });
+            return ret("string", "string"); 
+          }
+
         }
       }
       
