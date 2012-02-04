@@ -9,7 +9,6 @@ $(document).ready(function(){
     $("#sandbox").html('<textarea id="editor">' + input + '</textarea>');
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
-    console.log(result);
 
      equals(expected, result);
      $("#editor").html("");

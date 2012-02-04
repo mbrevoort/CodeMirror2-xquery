@@ -106,8 +106,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       }
       
       if(stream.match("?", false)) {
-        state.tokenize = tokenPreProcessing;
-        return ret("tag", "tag");
+        return chain(stream, state, tokenPreProcessing);
       }
       
       var isclose = stream.eat("/");
@@ -203,7 +202,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       
       // if we think it's a function call but not yet known, 
       // set style to variable for now for lack of something better
-      if(mightBeFunction && !known) known = {type: "function_call", style: "variable, xquery-function"};
+      if(mightBeFunction && !known) known = {type: "function_call", style: "variable xquery-function"};
       
       // if the previous word was element, attribute, axis specifier, this word should be the name of that
       if(isInXmlConstructor(state)) {
@@ -368,9 +367,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   // handle preprocessing instructions
   function tokenPreProcessing(stream, state) {
     while (ch = stream.next()) {
-      if (ch == "?" && stream.match(">", false)) {
+      if (ch == "?" && stream.match(">", true)) {
         state.tokenize = tokenBase;        
-        return ret("comment", "comment");
+        return ret("comment", "comment xquery-pi");
       }
     }
   }

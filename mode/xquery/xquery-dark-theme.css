@@ -46,4 +46,5 @@ THE SOFTWARE.
 .cm-s-xquery-dark span.cm-tag {color: #FFBD40;}
 .cm-s-xquery-dark span.cm-attribute {color: #FFF700;}
 
-.cm-s-xquery-dark span.xquery-function { color: #FFF; text-decoration:underline;}
+.cm-s-xquery-dark span.cm-xquery-function { color: #FFF; text-decoration:underline;}
+.cm-s-xquery-dark span.cm-xquery-pi { color: yellow;}
