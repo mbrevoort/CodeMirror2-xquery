@@ -66,7 +66,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     for(var i=0, l=types.length; i < l; i++) { kwObj[types[i]] = atom;};
     
     // each operator will add a property to kwObj with value of {type: "operator", style: "keyword"}
-    var operators = ['eq', 'ne', 'lt', 'le', 'gt', 'ge', ':=', '=', '>', '>=', '<', '<=', '.', '|', '?', 'and', 'or', 'div', 'idiv', 'mod', '*', '/'];
+    var operators = ['eq', 'ne', 'lt', 'le', 'gt', 'ge', ':=', '=', '>', '>=', '<', '<=', '.', '|', '?', 'and', 'or', 'div', 'idiv', 'mod', '*', '/', '+', '-'];
     for(var i=0, l=operators.length; i < l; i++) { kwObj[operators[i]] = operator;};
     
     // each axis_specifiers will add a property to kwObj with value of {type: "axis_specifier", style: "qualifier"}
