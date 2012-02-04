@@ -311,7 +311,6 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         pushStateStack(state, { type: "tag", name: name, tokenize: tokenBase});
       if(!stream.eat(">")) {
         state.tokenize = tokenAttribute;
-        pushStateStack(state, { type: "attribute", name: name, tokenize: tokenAttribute});
         return ret("tag", "tag");
       }
       else {
@@ -331,7 +330,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       return ret("tag", "tag");
     }
     if(ch == ">") {
-      popStateStack(state);
+      state.tokenize = tokenBase;
       return ret("tag", "tag");
     }
     if(ch == "=")
@@ -340,10 +339,13 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     if (ch == '"' || ch == "'")
       return chain(stream, state, tokenString(ch, tokenAttribute));
     
+    if(isInXmlAttributeBlock(state)) popStateStack(state);
+    pushStateStack(state, { type: "attribute", name: name, tokenize: tokenAttribute});
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
     stream.eatSpace();
     if(stream.match(">", false) || stream.match("/", false)) {
+      popStateStack(state);
       state.tokenize = tokenBase;      
     }
     return ret("attribute", "attribute");
