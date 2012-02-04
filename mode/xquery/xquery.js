@@ -55,7 +55,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     'let','module','namespace','node','node','of','only','or','order','parent','precedes','preceding',
     'preceding-sibling','processing-instruction','ref','return','returns','satisfies','schema','schema-element',
     'self','some','sortby','stable','text','then','to','treat','typeswitch','union','variable','version','where',
-    'xquery'];
+    'xquery', 'empty-sequence'];
     for(var i=0, l=basic.length; i < l; i++) { kwObj[basic[i]] = kw(basic[i])};
     
     // a list of types. For each add a property to kwObj with the value of 
