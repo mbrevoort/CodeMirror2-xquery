@@ -46,7 +46,7 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
 // this test is based on:
 // http://mbrevoort.github.com/CodeMirror2/#!Basics/EQNames/eqname-003.xq
 // --------------------------------------------------------------------------------
-  test("tetest EQNamest function", function() {
+  test("test EQName function", function() {
     expect(1);
 
     var input = 'declare function "http://www.example.com/ns/my":fn ($a as xs:integer) as xs:integer {\
@@ -64,6 +64,27 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
      $("#editor").html("");
   });
 
+// --------------------------------------------------------------------------------
+// this test is based on:
+// http://mbrevoort.github.com/CodeMirror2/#!Basics/EQNames/eqname-003.xq
+// --------------------------------------------------------------------------------
+  test("test EQName function with single quotes", function() {
+    expect(1);
+
+    var input = 'declare function \'http://www.example.com/ns/my\':fn ($a as xs:integer) as xs:integer {\
+   $a + 2\
+};\
+<out>{\'http://www.example.com/ns/my\':fn(12)}</out>';
+
+    var expected = '<span class="cm-keyword">declare</span> <span class="cm-keyword">function</span> <span class="cm-variable xquery-function">\'http://www.example.com/ns/my\':fn</span> (<span class="cm-variable">$a</span> <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span>) <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span> {   <span class="cm-variable">$a</span> <span class="cm-keyword">+</span> <span class="cm-atom">2</span>}<span class="cm-word">;</span><span class="cm-tag">&lt;out&gt;</span>{<span class="cm-variable xquery-function">\'http://www.example.com/ns/my\':fn</span>(<span class="cm-atom">12</span>)}<span class="cm-tag">&lt;/out&gt;</span>';
+
+    $("#sandbox").html('<textarea id="editor">' + input + '</textarea>');
+    var editor = CodeMirror.fromTextArea($("#editor")[0]);
+    var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
+
+     equals(result, expected);
+     $("#editor").html("");
+  });
 
 });
 

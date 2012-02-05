@@ -150,7 +150,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       return chain(stream, state, tokenComment);
     }
     // quoted string
-    else if ( (ch === '"' && !isEQName) || ch === "'")
+    else if (  !isEQName && (ch === '"' || ch === "'"))
       return chain(stream, state, tokenString(ch));
     // variable
     else if(ch === "$") {
@@ -184,7 +184,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       var known = keywords.propertyIsEnumerable(ch) && keywords[ch];
 
       // if there's a EQName ahead, consume the rest of the string portion, it's likely a function
-      if(isEQName) while(stream.next() !== '"'){}
+      if(isEQName && ch === '\"') while(stream.next() !== '"'){}
+      if(isEQName && ch === '\'') while(stream.next() !== '\''){}
       
       // gobble up a word if the character is not known
       if(!known) stream.eatWhile(/[\w\$_-]/);
@@ -407,6 +408,8 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     // assume we've already eaten a quote (")
     if(stream.current() === '"')
       return stream.match(/^[^\"]+\"\:/, false);
+    else if(stream.current() === '\'')
+      return stream.match(/^[^\"]+\'\:/, false);
     else
       return false;
   }
