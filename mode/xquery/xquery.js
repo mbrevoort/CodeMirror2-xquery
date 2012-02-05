@@ -284,6 +284,15 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   // tokenizer for variables
   function tokenVariable(stream, state) {
     var isVariableChar = /[\w\$_-]/;
+
+    // a variable may start with a quoted EQName so if the next character is quote, consume to the next quote
+    if(stream.eat("\"")) {
+      while(stream.next() !== '\"'){};
+      stream.eat(":");
+    } else {
+      stream.eatWhile(isVariableChar);
+      if(!stream.match(":=", false)) stream.eat(":");
+    }
     stream.eatWhile(isVariableChar);
     state.tokenize = tokenBase;
     return ret("variable", "variable");
@@ -331,15 +340,22 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     if (ch == '"' || ch == "'")
       return chain(stream, state, tokenString(ch, tokenAttribute));
     
+    // if still in a tag, and not closing, assume we finished seeing
+    // one attribute and expect another
     if(isInXmlAttributeBlock(state)) popStateStack(state);
     pushStateStack(state, { type: "attribute", name: name, tokenize: tokenAttribute});
+
+
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
     stream.eatSpace();
+
+    // the case where the attribute has not value and the tag was closed
     if(stream.match(">", false) || stream.match("/", false)) {
       popStateStack(state);
       state.tokenize = tokenBase;      
     }
+
     return ret("attribute", "attribute");
   }
   
