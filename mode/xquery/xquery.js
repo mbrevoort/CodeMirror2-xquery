@@ -93,7 +93,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   
   // the primary mode tokenizer
   function tokenBase(stream, state) {
-    var ch = stream.next(), mightBeFunction = false;
+    var ch = stream.next(), 
+        mightBeFunction = false,
+        isEQName = isEQNameAhead(stream);
     
     // an XML tag (if not in some sub, chained tokenizer)
     if (ch == "<") {
@@ -143,43 +145,46 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       return ret("number", "atom");
     }
     // comment start
-    else if (ch == "(" && stream.eat(":")) {
+    else if (ch === "(" && stream.eat(":")) {
       pushStateStack(state, { type: "comment"});
       return chain(stream, state, tokenComment);
     }
     // quoted string
-    else if (ch == '"' || ch == "'")
+    else if ( (ch === '"' && !isEQName) || ch === "'")
       return chain(stream, state, tokenString(ch));
     // variable
-    else if(ch == "$") {
+    else if(ch === "$") {
       return chain(stream, state, tokenVariable);
     }
     // assignment
-    else if(ch ==":" && stream.eat("=")) {
+    else if(ch ===":" && stream.eat("=")) {
       return ret("operator", "keyword");
     }
     // open paren
-    else if(ch == "(") {
+    else if(ch === "(") {
       pushStateStack(state, { type: "paren"});
       return ret("", "");
     }
     // close paren
-    else if(ch == ")") {
+    else if(ch === ")") {
       popStateStack(state);
       return ret("", "");
     }
     // open paren
-    else if(ch == "[") {
+    else if(ch === "[") {
       pushStateStack(state, { type: "bracket"});
       return ret("", "");
     }
     // close paren
-    else if(ch == "]") {
+    else if(ch === "]") {
       popStateStack(state);
       return ret("", "");
     }
     else {
       var known = keywords.propertyIsEnumerable(ch) && keywords[ch];
+
+      // if there's a EQName ahead, consume the rest of the string portion, it's likely a function
+      if(isEQName) while(stream.next() !== '"'){}
       
       // gobble up a word if the character is not known
       if(!known) stream.eatWhile(/[\w\$_-]/);
@@ -193,7 +198,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
         stream.eatWhile(/[\w\$_-]/);
       }
       // if the next non whitespace character is an open paren, this is probably a function (if not a keyword of other sort)
-      if(stream.match(/[ \t]*\(/, false)) {
+      if(stream.match(/^[ \t]*\(/, false)) {
         mightBeFunction = true;
       }
       // is the word a keyword?
@@ -397,6 +402,14 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   function isInCodeBlock(state) { return isIn(state, "codeblock"); }
   function isInXmlConstructor(state) { return isIn(state, "xmlconstructor"); }
   function isInString(state) { return isIn(state, "string"); }
+
+  function isEQNameAhead(stream) { 
+    // assume we've already eaten a quote (")
+    if(stream.current() === '"')
+      return stream.match(/^[^\"]+\"\:/, false);
+    else
+      return false;
+  }
   
   function isIn(state, type) {
     return (state.stack.length && state.stack[state.stack.length - 1].type == type);    
@@ -404,26 +417,14 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   
   function pushStateStack(state, newState) {
     state.stack.push(newState);
-    //console.log("pushState:", newState.type, JSON.stringify(state.stack), getTokenStateString(state.tokenize));
   }
   
   function popStateStack(state) {
     var popped = state.stack.pop();
     var reinstateTokenize = state.stack.length && state.stack[state.stack.length-1].tokenize
     state.tokenize = reinstateTokenize || tokenBase;
-    //if(popped) console.log("popState: ", popped.type, JSON.stringify(state.stack), getTokenStateString(state.tokenize));
   }
   
-  // function getTokenStateString(f) {
-  //   if(f === tokenBase) return "tokenBase";
-  //   if(f === tokenAttribute) return "tokenAttribute";
-  //   if(f === tokenVariable) return "tokenVariable";
-  //   if(f === tokenXMLComment) return "tokenXMLComment";
-  //   if(f === tokenTag) return "tokenTag";
-  //   if(!f) return "-";
-  //   return "? tokenTag or tokenString";
-  // }
-
   // the interface for the mode API
   return {
     startState: function(basecolumn) {

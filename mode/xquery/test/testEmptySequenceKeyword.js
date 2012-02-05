@@ -10,7 +10,7 @@ $(document).ready(function(){
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
 
-     equals(expected, result);
+     equals(result, expected);
      $("#editor").html("");
   });
 });

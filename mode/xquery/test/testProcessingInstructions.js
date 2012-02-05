@@ -1,5 +1,3 @@
-
-
 $(document).ready(function(){
   module("testProcessingInstructions");
   test("testProcessingInstructions", function() {
@@ -11,9 +9,8 @@ $(document).ready(function(){
     $("#sandbox").html('<textarea id="editor">' + input + '</textarea>');
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
-    console.log(result);
 
-     equals(expected, result);
+     equals(result, expected);
      $("#editor").html("");
   });
 });
