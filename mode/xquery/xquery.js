@@ -253,18 +253,20 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     return function(stream, state) {
       var ch;
 
-      // if we're in a string and in an XML block, allow an embedded code block
-      if(stream.match("{", false) && isInXmlAttributeBlock(state)) {
-        state.tokenize = tokenBase;
-        pushStateStack(state, { type: "string", name: quote, tokenize: tokenString(quote, f) });
-        return ret("string", "string"); 
-      }
-
       if(isInString(state) && stream.current() == quote) {
         popStateStack(state);
         if(f) state.tokenize = f;
         return ret("string", "string");
       }
+
+      pushStateStack(state, { type: "string", name: quote, tokenize: tokenString(quote, f) });
+
+      // if we're in a string and in an XML block, allow an embedded code block
+      if(stream.match("{", false) && isInXmlAttributeBlock(state)) {
+        state.tokenize = tokenBase;
+        return ret("string", "string"); 
+      }
+
       
       while (ch = stream.next()) {
         if (ch ==  quote) {
@@ -276,7 +278,6 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
           // if we're in a string and in an XML block, allow an embedded code block in an attribute
           if(stream.match("{", false) && isInXmlAttributeBlock(state)) {
             state.tokenize = tokenBase;
-            pushStateStack(state, { type: "string", name: quote, tokenize: tokenString(quote, f) });
             return ret("string", "string"); 
           }
 
@@ -337,7 +338,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
       return ret("tag", "tag");
     }
     if(ch == ">") {
-      state.tokenize = tokenBase;
+      if(isInXmlAttributeBlock(state)) popStateStack(state);
       return ret("tag", "tag");
     }
     if(ch == "=")
@@ -345,12 +346,9 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
     // quoted string
     if (ch == '"' || ch == "'")
       return chain(stream, state, tokenString(ch, tokenAttribute));
-    
-    // if still in a tag, and not closing, assume we finished seeing
-    // one attribute and expect another
-    if(isInXmlAttributeBlock(state)) popStateStack(state);
-    pushStateStack(state, { type: "attribute", name: name, tokenize: tokenAttribute});
 
+    if(!isInXmlAttributeBlock(state)) 
+      pushStateStack(state, { type: "attribute", name: name, tokenize: tokenAttribute});
 
     stream.eat(/[a-zA-Z_:]/);
     stream.eatWhile(/[-a-zA-Z0-9_:.]/);
