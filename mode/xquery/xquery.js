@@ -294,7 +294,7 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
 
     // a variable may start with a quoted EQName so if the next character is quote, consume to the next quote
     if(stream.eat("\"")) {
-      while(stream.next() !== '\"'){};
+      while(stream.peek() !== undefined && stream.next() !== '\"'){};
       stream.eat(":");
     } else {
       stream.eatWhile(isVariableChar);
