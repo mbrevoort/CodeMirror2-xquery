@@ -17,7 +17,7 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
 
-     equals(result, expected);
+     equal(result, expected);
      $("#editor").html("");
   });
 
@@ -38,7 +38,7 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
 
-     equals(result, expected);
+     equal(result, expected);
      $("#editor").html("");
   });
 
@@ -54,13 +54,13 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
 };\
 <out>{"http://www.example.com/ns/my":fn(12)}</out>';
 
-    var expected = '<span class="cm-keyword">declare</span> <span class="cm-keyword">function</span> <span class="cm-variable xquery-function">"http://www.example.com/ns/my":fn</span> (<span class="cm-variable">$a</span> <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span>) <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span> {   <span class="cm-variable">$a</span> <span class="cm-keyword">+</span> <span class="cm-atom">2</span>}<span class="cm-word">;</span><span class="cm-tag">&lt;out&gt;</span>{<span class="cm-variable xquery-function">"http://www.example.com/ns/my":fn</span>(<span class="cm-atom">12</span>)}<span class="cm-tag">&lt;/out&gt;</span>';
+    var expected = '<span class="cm-keyword">declare</span> <span class="cm-keyword">function</span> <span class="cm-variable cm-xquery-function">"http://www.example.com/ns/my":fn</span> (<span class="cm-variable">$a</span> <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span>) <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span> {   <span class="cm-variable">$a</span> <span class="cm-keyword">+</span> <span class="cm-atom">2</span>}<span class="cm-word">;</span><span class="cm-tag">&lt;out&gt;</span>{<span class="cm-variable cm-xquery-function">"http://www.example.com/ns/my":fn</span>(<span class="cm-atom">12</span>)}<span class="cm-tag">&lt;/out&gt;</span>';
 
     $("#sandbox").html('<textarea id="editor">' + input + '</textarea>');
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
 
-     equals(result, expected);
+     equal(result, expected);
      $("#editor").html("");
   });
 
@@ -76,13 +76,13 @@ declare variable $e:exampleComThisVarIsNotRecognized as element(*) external;';
 };\
 <out>{\'http://www.example.com/ns/my\':fn(12)}</out>';
 
-    var expected = '<span class="cm-keyword">declare</span> <span class="cm-keyword">function</span> <span class="cm-variable xquery-function">\'http://www.example.com/ns/my\':fn</span> (<span class="cm-variable">$a</span> <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span>) <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span> {   <span class="cm-variable">$a</span> <span class="cm-keyword">+</span> <span class="cm-atom">2</span>}<span class="cm-word">;</span><span class="cm-tag">&lt;out&gt;</span>{<span class="cm-variable xquery-function">\'http://www.example.com/ns/my\':fn</span>(<span class="cm-atom">12</span>)}<span class="cm-tag">&lt;/out&gt;</span>';
+    var expected = '<span class="cm-keyword">declare</span> <span class="cm-keyword">function</span> <span class="cm-variable cm-xquery-function">\'http://www.example.com/ns/my\':fn</span> (<span class="cm-variable">$a</span> <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span>) <span class="cm-keyword">as</span> <span class="cm-atom">xs:integer</span> {   <span class="cm-variable">$a</span> <span class="cm-keyword">+</span> <span class="cm-atom">2</span>}<span class="cm-word">;</span><span class="cm-tag">&lt;out&gt;</span>{<span class="cm-variable cm-xquery-function">\'http://www.example.com/ns/my\':fn</span>(<span class="cm-atom">12</span>)}<span class="cm-tag">&lt;/out&gt;</span>';
 
     $("#sandbox").html('<textarea id="editor">' + input + '</textarea>');
     var editor = CodeMirror.fromTextArea($("#editor")[0]);
     var result = $(".CodeMirror-lines div div pre")[0].innerHTML;
 
-     equals(result, expected);
+     equal(result, expected);
      $("#editor").html("");
   });
 
