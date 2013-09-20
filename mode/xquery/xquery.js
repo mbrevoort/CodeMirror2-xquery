@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2011 by MarkLogic Corporation
+Copyright (C) 2011-2013 by MarkLogic Corporation
 Author: Mike Brevoort <mike@brevoort.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -290,11 +290,12 @@ CodeMirror.defineMode("xquery", function(config, parserConfig) {
   
   // tokenizer for variables
   function tokenVariable(stream, state) {
-    var isVariableChar = /[\w\$_-]/;
+    var isVariableChar = /[\w\$_-]/,
+	streamIndexOf = function(array,value){ var index = -1; for(var i=0, l=array.length; i < l; i++) { if (array[i] === value) index = i; }  return index; };
 
     // a variable may start with a quoted EQName so if the next character is quote, consume to the next quote
     if(stream.eat("\"")) {
-      while(stream.peek() !== undefined && stream.next() !== '\"'){};
+      while(stream.peek() !== undefined && streamIndexOf(['\"',undefined],stream.next()) === -1){};
       stream.eat(":");
     } else {
       stream.eatWhile(isVariableChar);
